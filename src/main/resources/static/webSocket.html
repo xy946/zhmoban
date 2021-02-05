@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <title>websocket测试页面</title>
+</head>
+<body>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-addon">ws地址</span>
+                    <input type="text" id="address" class="form-control" placeholder="ws地址"
+                           aria-describedby="basic-addon1" value="ws://localhost:8088/webSocket/1">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit" id="connect">连接</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 10px;display: none;" id="msg-panel">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-addon">消息</span>
+                    <input type="text" id="msg" class="form-control" placeholder="消息内容" aria-describedby="basic-addon1">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" type="submit" id="send">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 10px; padding: 10px;">
+            <div class="panel panel-default">
+                <div class="panel-body" id="log" style="height: 450px;overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+    $(function () {
+        var _socket;
+
+        $("#connect").click(function () {
+            _socket = new _websocket($("#address").val());
+            _socket.init();
+        });
+
+        $("#send").click(function () {
+            var _msg = $("#msg").val();
+            output("发送消息：" + _msg);
+            _socket.client.send(JSON.stringify(_msg));
+        });
+    });
+
+    function output(e) {
+        var _text = $("#log").html();
+        $("#log").html(_text + "<br>" + e);
+    }
+
+    function _websocket(address) {
+        this.address = address;
+        this.client;
+
+        this.init = function () {
+            if (!window.WebSocket) {
+                this.websocket = null;
+                return;
+            }
+
+            var _this = this;
+            var _client = new window.WebSocket(_this.address);
+
+            _client.onopen = function () {
+                output("websocket打开");
+                $("#msg-panel").show();
+            };
+
+            _client.onclose = function () {
+                _this.client = null;
+                output("websocket关闭");
+                $("#msg-panel").hide();
+            };
+
+            _client.onmessage = function (evt) {
+                output(evt.data);
+            };
+
+            _this.client = _client;
+        };
+
+        return this;
+    }
+</script>
+</body>
+</html>
+
